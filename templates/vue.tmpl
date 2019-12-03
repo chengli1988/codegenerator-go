@@ -1,0 +1,266 @@
+<template>
+    <el-container>
+        <el-header>
+            <el-form :inline="true" :model="queryForm" class="">
+                <el-form-item label="">
+                    <el-input v-model="queryForm." placeholder="" clearable></el-input>
+                </el-form-item>
+                <el-form-item label="">
+                    <el-input v-model="queryForm." placeholder="" clearable></el-input>
+                </el-form-item>
+                <el-form-item>
+                    <el-button type="primary" @click="handleQuery" icon="el-icon-search">查询</el-button>
+                </el-form-item>
+            </el-form>
+            <el-button-group>
+                <el-button type="primary" icon="el-icon-plus" @click="toAdd{{.GetStructName}}()">新增</el-button>
+                <el-button type="primary" icon="el-icon-delete" @click="remove{{.GetStructName}}s()">删除</el-button>
+            </el-button-group>
+        </el-header>
+        <el-main ref="mainContainer">
+            <el-table id="{{.GetStructVariableName}}Table" ref="{{.GetStructVariableName}}Table" :data="tableData.rows" border class="{{.GetTableNameNoPrefix}}_table" :stripe="true" :max-height="maxHeight" @selection-change="handleSelectionChange">
+                <el-table-column type="selection" width="35"></el-table-column>
+                {{- range $index, $column := .Columns}}
+                {{- if  ne $column.ColumnName $.IdColumn.ColumnName }}
+                <el-table-column prop="{{$column.GetTagJsonName}}" label="{{$column.ColumnComment}}"></el-table-column>
+                {{- end}}
+                {{- end}}
+                <el-table-column fixed="right" label="操作" width="100">
+                    <template slot-scope="scope">
+                        <el-button type="text" size="small" @click="toEdit{{.GetStructName}}(scope.row.{{.GetStructVariableName}}Id)">编辑</el-button>
+                        <el-button type="text" size="small" @click="remove{{.GetStructName}}ByIds(scope.row.{{.GetStructVariableName}}Id)">删除</el-button>
+                    </template>
+                </el-table-column>
+            </el-table>
+
+            <el-dialog title="编辑" :visible.sync="{{.GetStructVariableName}}FormVisible" @close="initDialog">
+                <el-form ref="{{.GetStructVariableName}}Form" :model="{{.GetStructVariableName}}Form" :rules="rules" label-width="80px">
+                {{- range $index, $column := .Columns}}
+                    {{- if ne $column.ColumnName $.IdColumn.ColumnName}}
+                    {{- if eq $column.IsNullable "NO"}}
+                        <el-form-item label="{{$column.ColumnComment}}" prop="{{$column.GetTagJsonName}}">
+                            <el-input v-model="{{$.GetStructVariableName}}Form.{{$column.GetTagJsonName}}" placeholder="{{$column.ColumnComment}}" clearable></el-input>
+                        </el-form-item>
+                    {{- else}}
+                        <el-form-item label="{{$column.ColumnComment}}">
+                            <el-input v-model="{{$.GetStructVariableName}}Form.{{$column.GetTagJsonName}}" placeholder="{{$column.ColumnComment}}" clearable></el-input>
+                        </el-form-item>
+                    {{- end}}
+                    {{- end}}
+                {{- end}}
+                </el-form>
+                <span slot="footer" class="dialog-footer">
+                    <el-button @click="{{.GetStructVariableName}}FormVisible = false">取 消</el-button>
+                    <el-button type="primary" @click="save{{.GetStructName}}()">保 存</el-button>
+                </span>
+            </el-dialog>
+        </el-main>
+        <el-footer>
+            <el-pagination class="table_page" :background="true"
+                :total="tableData.total" :current-page="tableData.currentPage" :page-size="tableData.pageSize"
+                @current-change="handleCurrentChange"
+                layout="total, ->, prev, pager, next"
+                >
+            </el-pagination>
+        </el-footer>
+    </el-container>
+</template>
+<script type="text/javascript">
+export default {
+    data () {
+        return {
+            urls: {
+                {{.GetStructVariableName}}Url: '/api/admin/{{.PackageName}}/{{.GetStructVariableName}}/queryone',
+                {{.GetStructVariableName}}PageUrl': '/api/admin/{{.PackageName}}/{{.GetStructVariableName}}/querypage',
+                add{{.GetStructName}}Url: '/api/admin/{{.PackageName}}/{{.GetStructVariableName}}/add',
+                edit{{.GetStructName}}Url: '/api/admin/{{.PackageName}}/{{.GetStructVariableName}}/edit',
+                remove{{.GetStructName}}Url: '/api/admin/{{.PackageName}}/{{.GetStructVariableName}}/remove'
+            },
+            queryForm: {
+            },
+            tableData: {
+                rows: [],
+                total: 0,
+                currentPage: 1,
+                pageSize: 10
+            },
+            selectionData: [],
+            maxHeight: 1000,
+            {{.GetStructVariableName}}FormVisible: false,
+            {{.GetStructVariableName}}Form: {
+            },
+            rules: {
+                {{- range $index, $column := .Columns}}
+                {{- if ne $column.ColumnName $.IdColumn.ColumnName}}
+                {{- if eq $column.IsNullable "NO"}}
+                {{- if ne $index 1}},{{- end}}
+                {{$column.GetTagJsonName}}: [
+                    { required: true, message: '请输入{{$column.ColumnComment}}!', trigger: 'blur' }
+                ]
+                {{- end}}
+                {{- end}}
+                {{- end}}
+            }
+        }
+    },
+    mounted: function () {
+        let vueVm = this
+        vueVm.maxHeight = (vueVm.$refs.mainContainer.$el.clientHeight - 11)
+
+        vueVm.query{{.GetStructName}}List(vueVm.tableData.currentPage, vueVm.tableData.pageSize)
+    },
+    methods: {
+        handleQuery () {
+            let vueVm = this
+
+            vueVm.query{{.GetStructName}}List(vueVm.tableData.currentPage, vueVm.tableData.pageSize)
+        },
+        handleSelectionChange (selection) {
+            let vueVm = this
+            vueVm.selectionData = selection
+        },
+        query{{.GetStructName}}List (currentPage, pageSize) {
+            let vueVm = this
+            let loadingInstance = vueVm.$loading({target: document.querySelector('#{{.GetStructVariableName}}Table')})
+
+            let queryParam = vueVm.queryForm
+            queryParam.currentPage = currentPage
+            queryParam.pageSize = pageSize
+
+            vueVm.$http({
+                url: vueVm.urls.{{.GetStructVariableName}}PageUrl,
+                method: 'POST',
+                data: queryParam
+            }).then(function (response) {
+                let result = response.data
+                if (result.code === 0) {
+                    let data = result.data
+                    vueVm.tableData.currentPage = data.currentPage
+                    vueVm.tableData.total = data.total
+                    vueVm.tableData.rows = data.rows
+                }
+                loadingInstance.close()
+            })
+        },
+        initDialog () {
+            let vueVm = this
+            vueVm.$refs[vueVm.{{.GetStructVariableName}}Form].clearValidate()
+        },
+        toAdd{{.GetStructName}} () {
+            let vueVm = this
+
+            vueVm.{{.GetStructVariableName}}FormVisible = true
+        },
+        toEdit{{.GetStructName}} ({{.GetStructVariableName}}Id) {
+            let vueVm = this
+
+            vueVm.$http({
+                url: vueVm.urls.{{.GetStructVariableName}}Url,
+                method: 'POST',
+                data: {'{{.GetStructVariableName}}Id': {{.GetStructVariableName}}Id}
+            }).then(function (response) {
+                let result = response.data
+                if (result.code === 0) {
+                    vueVm.{{.GetStructVariableName}}FormVisible = true
+                    vueVm.{{.GetStructVariableName}}Form = result.data
+                } else {
+                    vueVm.$message.error(response.data.message)
+                }
+            })
+        },
+        save{{.GetStructName}} () {
+            let vueVm = this
+            let url = vueVm.{{.GetStructVariableName}}Form.{{.GetStructVariableName}}Id ? vueVm.urls.edit{{.GetStructName}}Url : vueVm.urls.add{{.GetStructName}}Url
+
+            vueVm.$refs[vueVm.{{.GetStructVariableName}}Form].validate((valid) => {
+                if (valid) {
+                    vueVm.$http({
+                        url: url,
+                        method: 'POST',
+                        data: vueVm.{{.GetStructVariableName}}Form
+                    }).then(function (response) {
+                        let result = response.data
+                        if (result.code === 0) {
+                            vueVm.handleQuery()
+
+                            vueVm.$message.success(response.data.message)
+                            vueVm.{{.GetStructVariableName}}FormVisible = false
+                        } else {
+                            vueVm.$message.error(response.data.message)
+                        }
+                    })
+                }
+            })
+        },
+        remove{{.GetStructName}}s () {
+            let vueVm = this
+
+            let {{.GetStructVariableName}}Ids = []
+            for (let {{.GetStructVariableName}} of vueVm.selectionData) {
+                {{.GetStructVariableName}}Ids.push({{.GetStructVariableName}}.{{.GetStructVariableName}}Id)
+            }
+
+            if ({{.GetStructVariableName}}Ids.length === 0) {
+                vueVm.$message.error('请选择要删除的记录！')
+            } else {
+                vueVm.remove{{.GetStructName}}ByIds({{.GetStructVariableName}}Ids.join(','))
+            }
+        },
+        remove{{.GetStructName}}ByIds (ids) {
+            let vueVm = this
+
+            vueVm.$http({
+                url: vueVm.urls.remove{{.GetStructName}}Url,
+                method: 'POST',
+                data: {'{{.GetStructVariableName}}Id': ids}
+            }).then(function (response) {
+                let result = response.data
+                if (result.code === 0) {
+                    vueVm.handleQuery()
+
+                    vueVm.$message.success(response.data.message)
+                } else {
+                    vueVm.$message.error(response.data.message)
+                }
+            })
+        },
+        handleCurrentChange (currentPage) {
+            let vueVm = this
+
+            vueVm.query{{.GetStructName}}List(currentPage, vueVm.tableData.pageSize)
+        }
+    }
+}
+</script>
+
+<style type="text/css" scoped>
+    .el-container {
+        height: 100%;
+    }
+
+    .el-header {
+        padding: 0px;
+        height: auto !important;
+    }
+
+    .el-main {
+        padding: 0px;
+    }
+
+    .el-footer {
+        padding: 0px;
+        height: 32px !important;
+    }
+
+    .{{.GetTableNameNoPrefix}}_table {
+        margin-top: 10px;
+    }
+
+    .table_page {
+        margin-top: 10px;
+    }
+
+    .el-dialog .el-select {
+        display: block;
+    }
+</style>

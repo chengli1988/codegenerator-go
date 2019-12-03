@@ -1,0 +1,145 @@
+package {{.PackageName}}
+
+import (
+	"net/http"
+
+	"baseproject-api/common"
+	"baseproject-api/util"
+)
+
+func init() {
+	common.RegisterAuthorizationHandler("/api/admin/{{.PackageName}}/{{.GetStructVariableName}}/queryall", All{{.GetStructName}}Handler)
+	common.RegisterAuthorizationHandler("/api/admin/{{.PackageName}}/{{.GetStructVariableName}}/querypage", Page{{.GetStructName}}Handler)
+	common.RegisterAuthorizationHandler("/api/admin/{{.PackageName}}/{{.GetStructVariableName}}/queryone", {{.GetStructName}}Handler)
+	common.RegisterAuthorizationHandler("/api/admin/{{.PackageName}}/{{.GetStructVariableName}}/add", Add{{.GetStructName}}Handler)
+	common.RegisterAuthorizationHandler("/api/admin/{{.PackageName}}/{{.GetStructVariableName}}/edit", Edit{{.GetStructName}}Handler)
+	common.RegisterAuthorizationHandler("/api/admin/{{.PackageName}}/{{.GetStructVariableName}}/remove", Remove{{.GetStructName}}Handler)
+}
+
+// All{{.GetStructName}}Handler 查询全部{{.GetStructName}}
+func All{{.GetStructName}}Handler(w http.ResponseWriter, r *http.Request) {
+	var (
+		err            error
+		{{.GetStructVariableName}}Result []map[string]interface{}
+	)
+
+	var {{.GetStructVariableName}}Param {{.GetStructName}}Model
+
+	util.ConvertJsonParams(r, &{{.GetStructVariableName}}Param)
+
+	{{.GetStructVariableName}}Result, err = {{.GetStructVariableName}}Param.QueryAll{{.GetStructName}}()
+
+	if err != nil {
+		util.WriterFailJsonResponse(w, err.Error())
+		return
+	}
+
+	util.WriterSuccessJsonResponse(w, "成功！", util.CreateAllData({{.GetStructVariableName}}Result))
+
+	return
+}
+
+// Page{{.GetStructName}}Handler 查询分页{{.GetStructName}}
+func Page{{.GetStructName}}Handler(w http.ResponseWriter, r *http.Request) {
+	var (
+		{{.GetStructVariableName}}Param  {{.GetStructName}}Model
+		pageUtil   util.PageUtil
+		{{.GetStructVariableName}}Result []map[string]interface{}
+		total      int
+		err        error
+	)
+
+	util.ConvertJsonParams(r, &{{.GetStructVariableName}}Param, &pageUtil)
+
+	{{.GetStructVariableName}}Result, total, err = {{.GetStructVariableName}}Param.QueryPage{{.GetStructName}}(pageUtil)
+
+	if err != nil {
+		util.WriterFailJsonResponse(w, err.Error())
+		return
+	}
+
+	util.WriterSuccessJsonResponse(w, "成功！", util.CreatePageData(pageUtil.CurrentPage, pageUtil.PageSize, total, {{.GetStructVariableName}}Result))
+
+	return
+}
+
+// {{.GetStructName}}Handler 根据标识查询{{.GetStructName}}
+func {{.GetStructName}}Handler(w http.ResponseWriter, r *http.Request) {
+	var (
+		{{.GetStructVariableName}}Param  {{.GetStructName}}Model
+		{{.GetStructVariableName}}Result map[string]interface{}
+		err        error
+	)
+
+	util.ConvertJsonParams(r, &{{.GetStructVariableName}}Param)
+
+	if {{.GetStructVariableName}}Param.{{.GetStructName}}Id == "" {
+		err = util.ErrorUtil{99001, "操作失败，缺少必要参数！"}
+		util.WriterFailJsonResponse(w, err.Error())
+		return
+	}
+
+	{{.GetStructVariableName}}Result, err = {{.GetStructVariableName}}Param.Query{{.GetStructName}}ById()
+
+	if err != nil {
+		util.WriterFailJsonResponse(w, err.Error())
+		return
+	}
+
+	util.WriterSuccessJsonResponse(w, "查询成功！", {{.GetStructVariableName}}Result)
+
+	return
+}
+
+// Add{{.GetStructName}}Handler 新增{{.GetStructName}}
+func Add{{.GetStructName}}Handler(w http.ResponseWriter, r *http.Request) {
+	var (
+		{{.GetStructVariableName}}Param {{.GetStructName}}Model
+	)
+
+	util.ConvertJsonParams(r, &{{.GetStructVariableName}}Param)
+
+	err := {{.GetStructVariableName}}Param.Add{{.GetStructName}}(util.GetLoginUserId(r))
+	if err != nil {
+		util.WriterFailJsonResponse(w, err.Error())
+		return
+	}
+
+	util.WriterSuccessJsonResponse(w, "新增成功！", nil)
+
+	return
+}
+
+// Edit{{.GetStructName}}Handler 修改{{.GetStructName}}
+func Edit{{.GetStructName}}Handler(w http.ResponseWriter, r *http.Request) {
+	var {{.GetStructVariableName}}Param {{.GetStructName}}Model
+	util.ConvertJsonParams(r, &{{.GetStructVariableName}}Param)
+
+	err := {{.GetStructVariableName}}Param.Edit{{.GetStructName}}(util.GetLoginUserId(r))
+
+	if err != nil {
+		util.WriterFailJsonResponse(w, err.Error())
+		return
+	}
+
+	util.WriterSuccessJsonResponse(w, "修改成功！", nil)
+
+	return
+}
+
+// Remove{{.GetStructName}}Handler 根据标识删除{{.GetStructName}}
+func Remove{{.GetStructName}}Handler(w http.ResponseWriter, r *http.Request) {
+	var {{.GetStructVariableName}}Param {{.GetStructName}}Model
+	util.ConvertJsonParams(r, &{{.GetStructVariableName}}Param)
+
+	err := {{.GetStructVariableName}}Param.Remove{{.GetStructName}}ByIds()
+
+	if err != nil {
+		util.WriterFailJsonResponse(w, err.Error())
+		return
+	}
+
+	util.WriterSuccessJsonResponse(w, "删除成功！", nil)
+
+	return
+}
