@@ -1,19 +1,23 @@
 package {{.PackageName}}
 
 import (
+	"log"
 	"net/http"
 
 	"baseproject-api/common"
 	"baseproject-api/util"
 )
 
-func init() {
+// Register{{.GetStructName}}Handlers 注册{{.GetStructName}} Handler
+func Register{{.GetStructName}}Handlers(serveMux *http.ServeMux) {
 	common.RegisterAuthorizationHandler("/api/admin/{{.PackageName}}/{{.GetStructVariableName}}/queryall", All{{.GetStructName}}Handler)
 	common.RegisterAuthorizationHandler("/api/admin/{{.PackageName}}/{{.GetStructVariableName}}/querypage", Page{{.GetStructName}}Handler)
 	common.RegisterAuthorizationHandler("/api/admin/{{.PackageName}}/{{.GetStructVariableName}}/queryone", {{.GetStructName}}Handler)
 	common.RegisterAuthorizationHandler("/api/admin/{{.PackageName}}/{{.GetStructVariableName}}/add", Add{{.GetStructName}}Handler)
 	common.RegisterAuthorizationHandler("/api/admin/{{.PackageName}}/{{.GetStructVariableName}}/edit", Edit{{.GetStructName}}Handler)
 	common.RegisterAuthorizationHandler("/api/admin/{{.PackageName}}/{{.GetStructVariableName}}/remove", Remove{{.GetStructName}}Handler)
+
+	log.Println("register {{.PackageName}} {{.GetStructVariableName}} handlers...")
 }
 
 // All{{.GetStructName}}Handler 查询全部{{.GetStructName}}
