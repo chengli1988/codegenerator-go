@@ -13,7 +13,7 @@ import (
 	"codegenerator-go/models"
 	"codegenerator-go/utils"
 
-	dbutil "github.com/chengli1988/go-dbutil-mysql"
+	"github.com/chengli1988/dbutil-mysql"
 )
 
 func printArg(arg interface{}, verb rune) {
@@ -34,10 +34,10 @@ func main() {
 	beginTime := time.Now().UnixNano()
 	fmt.Println("开始生成代码...")
 	// 初始化数据连接池
-	dbutil.InitPool("mysql", "root", "root", "127.0.0.1", "3306", dbName, "utf8mb4")
+	dbutil.InitPool("root", "root", "127.0.0.1", 3306, dbName, "utf8mb4")
 	// 查询数据
 	tableModel := queryData(dbName, tableName, packageName)
-
+	
 	// 创建目录
 	saveFilePath := filepath.Join(dirName, packageName)
 	os.MkdirAll(saveFilePath, os.ModePerm)
@@ -64,7 +64,7 @@ func main() {
 // queryData 查询数据
 func queryData(dbName string, tableName string, packageName string) models.TableModel {
 	var (
-		db         dbutil.BaseDB
+		db         dbutil.DB
 		tableModel models.TableModel
 		idColumn   models.ColumnModel
 	)

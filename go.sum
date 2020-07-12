@@ -1,12 +1,4 @@
-github.com/chengli1988/go-dbutil-mysql v0.0.0-20190826070513-086dee04e997 h1:icb0ggIdeuKPdkMR0d1++CvsMMLEVWUN6ezm3Xf87ZY=
-github.com/chengli1988/go-dbutil-mysql v0.0.0-20190826070513-086dee04e997/go.mod h1:aPGhasvop1NFJFi4xHcOz+Z+LkZeVRJiKnsUvc3YO+8=
-github.com/chengli1988/go-dbutil-mysql v0.0.0-20190827073639-ee0d23c63b16 h1:nfHKG8jAUCE2J8PJrN6mnK2ope7nZUSfpOfHoOn+ks8=
-github.com/chengli1988/go-dbutil-mysql v0.0.0-20190827073639-ee0d23c63b16/go.mod h1:aPGhasvop1NFJFi4xHcOz+Z+LkZeVRJiKnsUvc3YO+8=
-github.com/chengli1988/go-dbutil-mysql v0.0.0-20190828035249-0d0f473027cd h1:nNd8C7nLN/KTB2Q5+XQc/i75fbY6VzAw1qZfbhQlvXA=
-github.com/chengli1988/go-dbutil-mysql v0.0.0-20190828035249-0d0f473027cd/go.mod h1:aPGhasvop1NFJFi4xHcOz+Z+LkZeVRJiKnsUvc3YO+8=
-github.com/chengli1988/go-dbutil-mysql v0.0.0-20191029064344-dbaa6e4ada2b h1:9s14AcKgakE/CU13zRVXWxLNqvN1nKdm9Yh2op5/+WY=
-github.com/chengli1988/go-dbutil-mysql v0.0.0-20191029064344-dbaa6e4ada2b/go.mod h1:aPGhasvop1NFJFi4xHcOz+Z+LkZeVRJiKnsUvc3YO+8=
-github.com/go-sql-driver/mysql v1.4.1 h1:g24URVg0OFbNUTx9qqY1IRZ9D9z3iPyi5zKhQZpNwpA=
-github.com/go-sql-driver/mysql v1.4.1/go.mod h1:zAC/RDZ24gD3HViQzih4MyKcchzm+sOG5ZlKdlhCg5w=
-github.com/pkg/errors v0.8.1 h1:iURUrRGxPUNPdy5/HRSm+Yj6okJ6UtLINN0Q9M4+h3I=
-github.com/pkg/errors v0.8.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
+github.com/chengli1988/dbutil-mysql v0.0.0-20200711164911-ce7ffc0f4e19 h1:qRhFZw4IANCRb/+eLmz5eaJWmDqW4krUy959SlhlrwA=
+github.com/chengli1988/dbutil-mysql v0.0.0-20200711164911-ce7ffc0f4e19/go.mod h1:oyMhoBduQJxkidFTuyym7N5KUEmZG6dhFBhtnNgnAvY=
+github.com/go-sql-driver/mysql v1.5.0 h1:ozyZYNQW3x3HtqT1jira07DN2PArx2v7/mN66gGcHOs=
+github.com/go-sql-driver/mysql v1.5.0/go.mod h1:DCzpHaOWr8IXmIStZouvnhqoel9Qv2LBy8hT2VhHyBg=
