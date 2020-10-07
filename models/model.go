@@ -31,6 +31,12 @@ func (table TableModel) GetSupperTableName() string {
 	return strings.ReplaceAll(strings.ToUpper(table.TableName), "_", "")
 }
 
+// GetTableName 获取表名称(去掉下划线)
+// sys_user ===> SysUser
+func (table TableModel) GetTableName() string {
+	return utils.ToCamelCase(table.TableName)
+}
+
 // GetStructName 获取结构体名称(去掉前缀、下划线)
 // sys_user ===> User
 func (table TableModel) GetStructName() string {

@@ -148,7 +148,7 @@ export default {
         },
         toAdd{{.GetStructName}} () {
             let vueVm = this
-
+            vueVm.{{.GetStructVariableName}}Form = {}
             vueVm.{{.GetStructVariableName}}FormVisible = true
         },
         toEdit{{.GetStructName}} ({{.GetStructVariableName}}Id) {

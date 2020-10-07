@@ -27,8 +27,8 @@ func printArg(arg interface{}, verb rune) {
 func main() {
 
 	dbName := "demo"
-	tableName := "sys_user"
-	packageName := "system"
+	tableName := "event_nurse"
+	packageName := "event"
 	dirName := "target"
 
 	beginTime := time.Now().UnixNano()
@@ -37,7 +37,7 @@ func main() {
 	dbutil.InitPool("root", "root", "127.0.0.1", 3306, dbName, "utf8mb4")
 	// 查询数据
 	tableModel := queryData(dbName, tableName, packageName)
-	
+
 	// 创建目录
 	saveFilePath := filepath.Join(dirName, packageName)
 	os.MkdirAll(saveFilePath, os.ModePerm)

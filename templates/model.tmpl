@@ -3,20 +3,25 @@ package {{.PackageName}}
 import (
 	"strings"
 
-    "baseproject-api/util"
-	dbutil "github.com/chengli1988/go-dbutil-mysql"
+    "base-api/util"
+
+	"github.com/chengli1988/dbutil-mysql"
 )
 
+// {{.GetStructName}}字段常量
 const (
 	{{- range $index, $column := .Columns}}
-	{{$.GetSupperTableName}}_{{$column.GetSupperColumnName}} = "{{$column.ColumnName}}"
+	{{$.GetTableName}}{{$column.GetStructFieldName}} = "{{$column.GetTagJsonName}}"
 	{{- end}}
 )
 
+// {{.GetStructName}}Model {{.GetStructVariableName}} struct
 type {{.GetStructName}}Model struct {
 	{{- range $index, $column := .Columns}}
-	{{$column.GetStructFieldName}} {{$column.GetVarType}} `json:"{{$column.GetTagJsonName}}" db:"{{$column.ColumnName}}"` // {{$column.ColumnComment}}
+	{{$column.GetStructFieldName}} {{$column.GetVarType}} `json:"{{$column.GetTagJsonName}}" db:"{{$column.ColumnName}}" dbType:"{{$column.DataType}}" dbField:"true"` // {{$column.ColumnComment}}
 	{{- end}}
+
+	// 自定义字段
 }
 
 // GetTableName 返回数据库表名
@@ -26,33 +31,33 @@ func ({{.GetStructVariableName}} {{.GetStructName}}Model) GetTableName() string 
 
 // Query{{.GetStructName}}ById 根据标识查询{{.GetStructName}}
 func ({{.GetStructVariableName}} {{.GetStructName}}Model) Query{{.GetStructName}}ById() (map[string]interface{}, error) {
-	engine := dbutil.NewEngine({{.GetStructVariableName}}, nil)
-	engine.WhereEqs({{.GetSupperTableName}}_{{.IdColumn.GetSupperColumnName}})
+	selectEngine := dbutil.NewSelectEngine({{.GetStructVariableName}})
+	selectEngine.WhereEqs({{.GetTableName}}{{.IdColumn.GetStructFieldName}})
 
-	return engine.SelectOne()
+	return selectEngine.SelectOne()
 }
 
 // QueryAll{{.GetStructName}} 查询{{.GetStructName}}全部数据
 func ({{.GetStructVariableName}} {{.GetStructName}}Model) QueryAll{{.GetStructName}}() ([]map[string]interface{}, error) {
-	return dbutil.NewEngine({{.GetStructVariableName}}, nil)./*OrderByAsc().*/SelectAll()
+	return dbutil.NewSelectEngine({{.GetStructVariableName}})./*OrderByAsc().*/SelectAll()
 }
 
 // QueryPage{{.GetStructName}} 根据条件查下{{.GetStructName}}列表数据(分页)
 func ({{.GetStructVariableName}} {{.GetStructName}}Model) QueryPage{{.GetStructName}}(pageUtil util.PageUtil) ([]map[string]interface{}, int, error) {
-	engine := dbutil.NewEngine({{.GetStructVariableName}}, nil)
+	selectEngine := dbutil.NewSelectEngine({{.GetStructVariableName}})
 	
 	// 根据实际情况添加条件
-	// engine.WhereLikes()
-	// engine.OrderByDesc()
-	engine.Limit(pageUtil.CurrentPage, pageUtil.PageSize)
+	// selectEngine.WhereLikes()
+	// selectEngine.OrderByDesc()
+	selectEngine.Limit(pageUtil.CurrentPage, pageUtil.PageSize)
 
-	return engine.SelectPage()
+	return selectEngine.SelectPage()
 }
 
 // Add{{.GetStructName}} 新增{{.GetStructName}}
 func ({{.GetStructVariableName}} {{.GetStructName}}Model) Add{{.GetStructName}}(loginUserId string) error {
 	var (
-		// baseDB    dbutil.BaseDB
+		// db    dbutil.DB
 		err       error
 	)
 
@@ -60,10 +65,10 @@ func ({{.GetStructVariableName}} {{.GetStructName}}Model) Add{{.GetStructName}}(
 	// {{.GetStructVariableName}}.CreateId = loginUserId
 	// {{.GetStructVariableName}}.CreateTime = util.GetCurrentTime()
 
-	err = dbutil.NewEngine({{.GetStructVariableName}}, nil).Insert()
+	err = dbutil.NewInsertEngine({{.GetStructVariableName}}).Insert()
 
-	/* 事务例子(必须保证dbutil.NewEngine的第二个参数&baseDB为同一个实例)
-	_, err = baseDB.DoTransaction(func() error {
+	/* 事务例子(必须保证dbutil.NewInsertEngine的第二个参数&db为同一个实例)
+	_, err = db.DoTransaction(func() error {
 		
 		// 一些操作...
 		{{.GetStructVariableName}}.{{.IdColumn.GetStructFieldName}} = util.CreateUUID()
@@ -71,13 +76,13 @@ func ({{.GetStructVariableName}} {{.GetStructName}}Model) Add{{.GetStructName}}(
 		// {{.GetStructVariableName}}.CreateTime = util.GetCurrentTime()
 
 		// 数据库操作
-		err = dbutil.NewEngine({{.GetStructVariableName}}, &baseDB).Insert()
+		err = dbutil.NewInsertEngineDB({{.GetStructVariableName}}, &db).Insert()
 		if err != nil {
 			return err
 		}
 		
 		// 数据库操作
-		err = dbutil.NewEngine({{.GetStructVariableName}}, &baseDB).Insert()
+		err = dbutil.NewInsertEngineDB({{.GetStructVariableName}}, &db).Insert()
 		if err != nil {
 			return err
 		}
@@ -91,19 +96,16 @@ func ({{.GetStructVariableName}} {{.GetStructName}}Model) Add{{.GetStructName}}(
 
 // Edit{{.GetStructName}} 修改{{.GetStructName}}
 func ({{.GetStructVariableName}} {{.GetStructName}}Model) Edit{{.GetStructName}}(loginUserId string) error {
-	var (
-		// baseDB dbutil.BaseDB
-		err    error
-	)
+	var err error
 
 	// {{.GetStructVariableName}}.UpdateId = loginUserId
 	// {{.GetStructVariableName}}.UpdateTime = util.GetCurrentTime()
 
-	engine := dbutil.NewEngine({{.GetStructVariableName}}, nil)
-	engine.WhereEqs({{.GetSupperTableName}}_{{.IdColumn.GetSupperColumnName}})
+	updateEngine := dbutil.NewUpdateEngine({{.GetStructVariableName}})
+	updateEngine.WhereEqs({{.GetTableName}}{{.IdColumn.GetStructFieldName}})
 
 	// 如需事务操作，参考Add{{.GetStructName}}事务例子的注释代码
-	_, err = engine.Update()
+	_, err = updateEngine.Update()
 
 	return err
 }
@@ -120,17 +122,17 @@ func ({{.GetStructVariableName}} {{.GetStructName}}Model) Remove{{.GetStructName
 		return util.ErrorUtil{99003, "删除失败, 缺少必要参数！"}
 	}
 
-	engine := dbutil.NewEngine({{.GetStructVariableName}}, nil)
+	deleteEngine := dbutil.NewDeleteEngine({{.GetStructVariableName}})
 
 	idArray := strings.Split({{.GetStructVariableName}}Ids, ",")
 	if len(idArray) == 1 {
-		engine.WhereEqs({{.GetSupperTableName}}_{{.IdColumn.GetSupperColumnName}})
+		deleteEngine.WhereEqs({{.GetTableName}}{{.IdColumn.GetStructFieldName}})
 	} else {
-		engine.WhereIns({{.GetSupperTableName}}_{{.IdColumn.GetSupperColumnName}})
+		deleteEngine.WhereIns({{.GetTableName}}{{.IdColumn.GetStructFieldName}})
 	}
 
 	// 如需事务操作，参考Add{{.GetStructName}}事务例子的注释代码
-	_, err = engine.Delete()
+	_, err = deleteEngine.Delete()
 
 	return err
 }
