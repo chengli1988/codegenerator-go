@@ -7,7 +7,7 @@ import (
 	"base-api/util"
 )
 
-// Register{{.GetStructName}}Handlers 注册{{.GetStructName}} Handler
+// Register{{.GetStructName}}Handlers 注册{{.GetStructName}} Handlers
 func Register{{.GetStructName}}Handlers(serveMux *http.ServeMux) {
 	serveMux.HandleFunc(("/api/admin/{{.PackageName}}/{{.GetStructVariableName}}/queryall", util.AuthorizationHandler(All{{.GetStructName}}Handler))
 	serveMux.HandleFunc(("/api/admin/{{.PackageName}}/{{.GetStructVariableName}}/querypage", util.AuthorizationHandler(Page{{.GetStructName}}Handler))
@@ -77,7 +77,7 @@ func {{.GetStructName}}Handler(w http.ResponseWriter, r *http.Request) {
 	util.ConvertJsonParams(r, &{{.GetStructVariableName}}Param)
 
 	if {{.GetStructVariableName}}Param.{{.GetStructName}}Id == "" {
-		err = util.ErrorUtil{99001, "操作失败，缺少必要参数！"}
+		err = util.ErrorUtil{Code: 99001, Message: "操作失败，缺少必要参数！"}
 		util.WriterFailJsonResponse(w, err.Error())
 		return
 	}
